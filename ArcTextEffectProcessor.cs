@@ -40,15 +40,18 @@ namespace ArcText
             }
             
 
-            float distanceFactor = MathF.Cos(MathF.PI * (t - (float)centerXPoint / 400.0f) / 2.0f );
+            float distanceFactor = MathF.Cos(MathF.PI * (t - (float)centerXPoint / 100.0f) / 2.0f );
             float y = (float)height * distanceFactor;
 
 
             float dx = MathF.Abs(X) + MathF.Abs((float)centerXPoint);
             float dy = Y + y  + (float)height;
-            
-            float angle = (MathF.Atan2(dy, dx) * 180.0f / MathF.PI + (float)angleIntensity * MathF.Abs(t)) * -(t - (float)centerXPoint / 400.0f);
+            if (dx <= MathF.Abs(dy))
+            {
+                dx = MathF.Abs(dy);
+            }
 
+            float angle = (MathF.Atan2(dy, dx) * 180.0f / MathF.PI + (float)angleIntensity * MathF.Abs(t)) * -(t - (float)centerXPoint / 100.0f);
 
             var drawDesc = effectDescription.DrawDescription;
             return drawDesc with
