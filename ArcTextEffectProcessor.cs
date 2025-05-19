@@ -1,5 +1,4 @@
 ﻿using Vortice.Direct2D1;
-using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Player.Video;
 
 namespace ArcText
@@ -10,7 +9,7 @@ namespace ArcText
         ID2D1Image? input;
         public ID2D1Image Output => input ?? throw new NullReferenceException(nameof(input) + " is null");
 
-        public ArcTextEffectProcessor(IGraphicsDevicesAndContext devices, ArcTextEffect item)
+        public ArcTextEffectProcessor(ArcTextEffect item)
         {
             this.item = item;
         }
@@ -22,49 +21,47 @@ namespace ArcText
             var length = effectDescription.ItemDuration.Frame;
             var fps = effectDescription.FPS;
 
-            var X = effectDescription.DrawDescription.Draw.X;
-            var Y = effectDescription.DrawDescription.CenterPoint.Y;
             var textIndex = effectDescription.InputIndex;
-            var totalTextCount = effectDescription.InputCount;
+            var textCount = effectDescription.InputCount;
 
             var height = item.Height.GetValue(frame, length, fps);
             var angleIntensity = item.Angle.GetValue(frame, length, fps);
             var interval = item.Interval.GetValue(frame, length, fps);
             var centerXPoint = item.CenterXPoint.GetValue(frame, length, fps);
 
+            if (textCount < 2)
+                return effectDescription.DrawDescription;
 
-            float t = 0.0f;
-            if (totalTextCount > 2)
+            var t = (double)textIndex / (textCount - 1);
+            var x = -Math.Cos(Math.PI * t);
+            var y = -height * Math.Sin(Math.PI * (t - centerXPoint / 200d));
+
+
+            double angle;
+            var dis = x - centerXPoint / 100d;
+            var ang = angleIntensity * dis;
+            if (dis >= 0)
             {
-                t = (textIndex - (totalTextCount - 1) / 2.0f) / ((totalTextCount - 1) / 2.0f);
+                angle = Math.Atan2(y + height, x + height) * 180 / Math.PI + ang;
             }
-            
-
-            float distanceFactor = MathF.Cos(MathF.PI * (t - (float)centerXPoint / 100.0f) / 2.0f );
-            float y = (float)height * distanceFactor;
-
-
-            float dx = MathF.Abs(X) + MathF.Abs((float)centerXPoint);
-            float dy = Y + y  + (float)height;
-            if (dx <= MathF.Abs(dy))
+            else
             {
-                dx = MathF.Abs(dy);
+                angle = -Math.Atan2(y + height, x + height) * 180 / Math.PI + ang;
             }
 
-            float angle = (MathF.Atan2(dy, dx) * 180.0f / MathF.PI + (float)angleIntensity * MathF.Abs(t)) * -(t - (float)centerXPoint / 100.0f);
 
             var drawDesc = effectDescription.DrawDescription;
             return drawDesc with
             {
                 Draw = new(
-                    drawDesc.Draw.X + (float)interval * t,
-                    drawDesc.Draw.Y + y,
+                    drawDesc.Draw.X + (float)x + (float)(interval * dis),
+                    drawDesc.Draw.Y + (float)y,
                     drawDesc.Draw.Z
                 ),
                 Rotation = new(
                     drawDesc.Rotation.X,
                     drawDesc.Rotation.Y,
-                    drawDesc.Rotation.Z + angle
+                    drawDesc.Rotation.Z + (float)angle
                 )
             };
         }

@@ -14,7 +14,7 @@ namespace ArcText
 
         [Display(GroupName = "配置", Name = "高さ", Description = "高さ")]
         [AnimationSlider("F1", "px", -100, 100)]
-        public Animation Height { get; } = new Animation(-100, -99999, 99999);
+        public Animation Height { get; } = new Animation(200, -99999, 99999);
 
         [Display(GroupName = "配置", Name = "中心位置", Description = "X座標の中心位置")]
         [AnimationSlider("F1", "%", -100, 100)]
@@ -36,7 +36,7 @@ namespace ArcText
 
         public override IVideoEffectProcessor CreateVideoEffect(IGraphicsDevicesAndContext devices)
         {
-            return new ArcTextEffectProcessor(devices, this);
+            return new ArcTextEffectProcessor(this);
         }
 
         protected override IEnumerable<IAnimatable> GetAnimatables() => [Height, Interval, Angle, CenterXPoint];
